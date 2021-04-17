@@ -32,7 +32,7 @@ class UI {
     }
     
     static addBookToList(book) {
-        const list = document.querySelector('#book-list');
+        const list = document.querySelector('#js-book-list');
 
         const row = document.createElement('tr');
 
@@ -40,12 +40,37 @@ class UI {
             <td>${book.title}</td>
             <td>${book.author}</td>
             <td>${book.isbn}</td>
-            <td><button class="btn btn-danger btn-sm delete">X</button></td>
+            <td><button class="btn btn-danger btn-sm js-delete">X</button></td>
         `;
 
         list.appendChild(row);
 
     }
+
+    static deleteBook(el) {
+        if(el.classList.contains('js-delete')) {
+            el.parentElement.parentElement.remove();
+        }
+    }
+
+    static showAlert(message, className) {
+        const div = document.createElement('div');
+
+        div.className =`js-alert alert alert-${className}`;
+        div.appendChild(document.createTextNode(message));
+
+        const container = document.querySelector('.js-container');
+        const form = document.querySelector('#js-book-form');
+
+        container.insertBefore(div, form);
+
+        // Remove in 3 seconds
+        setTimeout(() => {
+            document.querySelector('.js-alert').remove();
+        }, 3000);
+
+    }
+
 }
 
 // Store Class: Handles Storage (localStorage)
@@ -54,5 +79,36 @@ class UI {
 document.addEventListener('DOMContentLoaded', UI.displayBooks)
 
 // Event: Add a Book
+document.querySelector('#js-book-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    // get form values
+    const title = document.querySelector('#title').value;
+    const author = document.querySelector('#author').value;
+    const isbn = document.querySelector('#isbn').value;
+
+    // Validate values
+    if(title === '' || author === '' || isbn === '') {
+        UI.showAlert('Please fill in all the fields', 'danger');
+    } else {
+        // Instantiate book
+        const book = new Book(title, author, isbn);
+
+        // Add book to list
+        UI.addBookToList(book);
+
+        // Show success message
+        UI.showAlert('Book added successfully', 'success');
+
+        // Clear Fields
+        e.target.reset();        
+    }
+});
 
 // Event: Remove a Book
+
+document.querySelector('#js-book-list').addEventListener('click', e => {
+    UI.deleteBook(e.target);
+
+    // Show success message
+    UI.showAlert('Book removed successfully', 'success');
+})
