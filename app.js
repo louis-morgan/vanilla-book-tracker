@@ -12,20 +12,9 @@ class Book {
 
 class UI {
     static displayBooks() {
-        const StoredBooks = [
-            {
-                title: 'Book One',
-                author: 'John Doe',
-                isbn: '1234568'
-            },
-            {
-                title: 'Book Two',
-                author: 'John Doe',
-                isbn: '1234568'
-            }
-        ];
+        
 
-        const books = StoredBooks;
+        const books = Store.getBooks();
 
         books.forEach(book => UI.addBookToList(book));
 
@@ -75,6 +64,36 @@ class UI {
 
 // Store Class: Handles Storage (localStorage)
 
+class Store {
+    static getBooks() {
+        let books;
+
+        if(localStorage.getItem('books') === null) {
+            books = [];
+        } else {
+            books = JSON.parse(localStorage.getItem('books'));
+        }
+
+        return books;
+    }
+
+    static addBook(book) {
+        const books = Store.getBooks();
+
+        books.push(book);
+
+        localStorage.setItem('books', JSON.stringify(books));
+    }
+
+    static removeBook(isbn) {
+        let books = Store.getBooks();
+
+        books = books.filter(book => book.isbn !== isbn);
+
+        localStorage.setItem('books', JSON.stringify(books));
+    }
+}
+
 // Event: Display Books
 document.addEventListener('DOMContentLoaded', UI.displayBooks)
 
@@ -96,6 +115,9 @@ document.querySelector('#js-book-form').addEventListener('submit', (e) => {
         // Add book to list
         UI.addBookToList(book);
 
+        // Add book to store
+        Store.addBook(book);
+
         // Show success message
         UI.showAlert('Book added successfully', 'success');
 
@@ -108,6 +130,9 @@ document.querySelector('#js-book-form').addEventListener('submit', (e) => {
 
 document.querySelector('#js-book-list').addEventListener('click', e => {
     UI.deleteBook(e.target);
+
+    // Delete from store
+    Store.removeBook(e.target.parentElement.previousElementSibling.textContent)
 
     // Show success message
     UI.showAlert('Book removed successfully', 'success');
